@@ -7,28 +7,21 @@ Scrapy Tutorial
 In this tutorial, we'll assume that Scrapy is already installed on your system.
 If that's not the case, see :ref:`intro-install`.
 
-We are going to scrape `quotes.toscrape.com <http://quotes.toscrape.com/>`_, a website
-that lists quotes from famous authors.
+我们将去掉 `quotes.toscrape.com <http://quotes.toscrape.com/>`_, 这是一个列出着名作家引用的网站。
 
-This tutorial will walk you through these tasks:
+本教程将引导您完成这些任务：
 
-1. Creating a new Scrapy project
-2. Writing a :ref:`spider <topics-spiders>` to crawl a site and extract data
-3. Exporting the scraped data using the command line
-4. Changing spider to recursively follow links
-5. Using spider arguments
+1. 创建一个新的Scrapy项目
+2. 编写蜘蛛抓取网站并提取数据
+3. 使用命令行导出刮取的数据
+4. 更改蜘蛛递归跟随链接
+5. 使用蜘蛛参数
 
-Scrapy is written in Python_. If you're new to the language you might want to
-start by getting an idea of what the language is like, to get the most out of
-Scrapy.
+Scrapy是用Python编写的。如果您对语言很陌生，您可能想先了解语言是什么样子，以充分利用Scrapy。
 
-If you're already familiar with other languages, and want to learn Python
-quickly, we recommend reading through `Dive Into Python 3`_.  Alternatively,
-you can follow the `Python Tutorial`_.
+如果您已经熟悉其他语言，并希望快速学习Python，我们建议您阅读Dive Into Python 3。或者，您可以按照Python教程。
 
-If you're new to programming and want to start with Python, you may find useful
-the online book `Learn Python The Hard Way`_. You can also take a look at `this
-list of Python resources for non-programmers`_.
+如果您是编程新手，想从Python开始，那么您可能会对联机丛书“ Learn Python The Hard Way”感兴趣。您还可以查看非程序员的Python资源列表。
 
 .. _Python: https://www.python.org/
 .. _this list of Python resources for non-programmers: https://wiki.python.org/moin/BeginnersGuide/NonProgrammers
@@ -37,45 +30,39 @@ list of Python resources for non-programmers`_.
 .. _Learn Python The Hard Way: https://learnpythonthehardway.org/book/
 
 
-Creating a project
+创建一个项目
 ==================
 
-Before you start scraping, you will have to set up a new Scrapy project. Enter a
-directory where you'd like to store your code and run::
+在开始抓取之前，您将不得不建立一个新的Scrapy项目。输入您想要存储代码并运行的目录：
 
     scrapy startproject tutorial
 
-This will create a ``tutorial`` directory with the following contents::
+这将创建一个 ``tutorial`` 包含以下内容的目录:
 
     tutorial/
-        scrapy.cfg            # deploy configuration file
+        scrapy.cfg            # 部署配置文件
 
-        tutorial/             # project's Python module, you'll import your code from here
+        tutorial/             # project的Python模块，你将从这里导入你的代码
             __init__.py
 
-            items.py          # project items definition file
+            items.py          # 项目项目定义文件
             
-            middlewares.py    # project middlewares file
+            middlewares.py    # 项目中间件文件
 
-            pipelines.py      # project pipelines file
+            pipelines.py      # 项目管道文件
 
-            settings.py       # project settings file
+            settings.py       # 项目设置文件
 
-            spiders/          # a directory where you'll later put your spiders
+            spiders/          # 一个你将在后面放置你的蜘蛛
                 __init__.py
 
 
-Our first Spider
+我们的第一个蜘蛛
 ================
 
-Spiders are classes that you define and that Scrapy uses to scrape information
-from a website (or a group of websites). They must subclass
-:class:`scrapy.Spider` and define the initial requests to make, optionally how
-to follow links in the pages, and how to parse the downloaded page content to
-extract data.
+蜘蛛是您定义的类，Scrapy用来从网站（或一组网站）上刮取信息。他们必须进行子类化 scrapy.Spider和定义最初的请求，可选择如何关注页面中的链接，以及如何解析下载的页面内容以提取数据.
 
-This is the code for our first Spider. Save it in a file named
-``quotes_spider.py`` under the ``tutorial/spiders`` directory in your project::
+这是我们第一个蜘蛛的代码。将其保存在项目目录quotes_spider.py下的一个文件 tutorial/spiders中：
 
     import scrapy
 
@@ -99,37 +86,24 @@ This is the code for our first Spider. Save it in a file named
             self.log('Saved file %s' % filename)
 
 
-As you can see, our Spider subclasses :class:`scrapy.Spider <scrapy.spiders.Spider>`
-and defines some attributes and methods:
+正如您所看到的，我们的Spider子类scrapy.Spider 定义了一些属性和方法：
 
-* :attr:`~scrapy.spiders.Spider.name`: identifies the Spider. It must be
-  unique within a project, that is, you can't set the same name for different
-  Spiders.
+* name：标识蜘蛛。它在项目中必须是唯一的，也就是说，不能为不同的蜘蛛设置相同的名称。
 
-* :meth:`~scrapy.spiders.Spider.start_requests`: must return an iterable of
-  Requests (you can return a list of requests or write a generator function)
-  which the Spider will begin to crawl from. Subsequent requests will be
-  generated successively from these initial requests.
+* start_requests()：必须返回Spider将开始抓取的请求的迭代（您可以返回请求列表或编写生成器函数）。随后的请求将从这些初始请求中连续生成。
 
-* :meth:`~scrapy.spiders.Spider.parse`: a method that will be called to handle
-  the response downloaded for each of the requests made. The response parameter
-  is an instance of :class:`~scrapy.http.TextResponse` that holds
-  the page content and has further helpful methods to handle it.
+* parse()：将被调用来处理为每个请求下载的响应的方法。响应参数是TextResponse保存页面内容的一个实例，并有更多有用的方法来处理它。
 
-  The :meth:`~scrapy.spiders.Spider.parse` method usually parses the response, extracting
-  the scraped data as dicts and also finding new URLs to
-  follow and creating new requests (:class:`~scrapy.http.Request`) from them.
+  该parse()方法通常解析响应，将提取的数据提取为字符串，并查找新的URL并Request根据它们创建新的请求（）。
 
-How to run our spider
+如何运行我们的蜘蛛
 ---------------------
 
-To put our spider to work, go to the project's top level directory and run::
+为了让我们的蜘蛛工作，请转到项目的顶层目录并运行：
 
    scrapy crawl quotes
 
-This command runs the spider with name ``quotes`` that we've just added, that
-will send some requests for the ``quotes.toscrape.com`` domain. You will get an output
-similar to this::
+这个命令以quotes我们刚刚添加的名称运行蜘蛛，它将发送一些quotes.toscrape.com域的请求。你会得到一个类似于这样的输出：
 
     ... (omitted for brevity)
     2016-12-16 21:24:05 [scrapy.core.engine] INFO: Spider opened
@@ -143,32 +117,24 @@ similar to this::
     2016-12-16 21:24:05 [scrapy.core.engine] INFO: Closing spider (finished)
     ...
 
-Now, check the files in the current directory. You should notice that two new
-files have been created: *quotes-1.html* and *quotes-2.html*, with the content
-for the respective URLs, as our ``parse`` method instructs.
-
-.. note:: If you are wondering why we haven't parsed the HTML yet, hold
-  on, we will cover that soon.
+现在，检查当前目录中的文件。按照我们的方法指示，您应该注意到已经创建了两个新文件：quotes-1.html和quotes-2.html，以及各个URL的内容parse。
 
 
-What just happened under the hood?
+
+注意
+
+如果您想知道为什么我们还没有解析HTML，请坚持下去，我们会很快回覆。
+
+
+在引擎盖下发生了什么？
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Scrapy schedules the :class:`scrapy.Request <scrapy.http.Request>` objects
-returned by the ``start_requests`` method of the Spider. Upon receiving a
-response for each one, it instantiates :class:`~scrapy.http.Response` objects
-and calls the callback method associated with the request (in this case, the
-``parse`` method) passing the response as argument.
+Scrapy安排scrapy.Request由start_requestsSpider 的方法返回的对象。收到每个响应后，它会实例化Response对象并调用与请求相关的回调方法（在本例中为 parse方法），将响应作为参数传递。
 
 
-A shortcut to the start_requests method
+start_requests方法的快捷方式
 ---------------------------------------
-Instead of implementing a :meth:`~scrapy.spiders.Spider.start_requests` method
-that generates :class:`scrapy.Request <scrapy.http.Request>` objects from URLs,
-you can just define a :attr:`~scrapy.spiders.Spider.start_urls` class attribute
-with a list of URLs. This list will then be used by the default implementation
-of :meth:`~scrapy.spiders.Spider.start_requests` to create the initial requests
-for your spider::
+不用实现一个从URL start_requests()生成scrapy.Request对象的方法，你可以start_urls用一个URL列表来定义一个类属性。这个列表将被默认实现start_requests()用于为您的蜘蛛创建初始请求
 
     import scrapy
 
@@ -186,32 +152,25 @@ for your spider::
             with open(filename, 'wb') as f:
                 f.write(response.body)
 
-The :meth:`~scrapy.spiders.Spider.parse` method will be called to handle each
-of the requests for those URLs, even though we haven't explicitly told Scrapy
-to do so. This happens because :meth:`~scrapy.spiders.Spider.parse` is Scrapy's
-default callback method, which is called for requests without an explicitly
-assigned callback.
+该parse()方法将被调用来处理这些URL的每个请求，即使我们没有明确告诉Scrapy这样做。发生这种情况是因为parse()Scrapy的默认回调方法，该方法在没有显式分配回调的情况下被调用。
 
 
-Extracting data
+提取数据
 ---------------
 
-The best way to learn how to extract data with Scrapy is trying selectors
-using the shell :ref:`Scrapy shell <topics-shell>`. Run::
+学习如何使用Scrapy提取数据的最佳方法是尝试使用Shell Scrapy外壳的选择器。跑：
 
     scrapy shell 'http://quotes.toscrape.com/page/1/'
 
-.. note::
+注意
 
-   Remember to always enclose urls in quotes when running Scrapy shell from
-   command-line, otherwise urls containing arguments (ie. ``&`` character)
-   will not work.
+请记住，从命令行运行Scrapy shell时，请始终将引号括起来，否则包含参数（例如。&字符）的url 将不起作用。
 
-   On Windows, use double quotes instead::
+在Windows上，请使用双引号：
 
        scrapy shell "http://quotes.toscrape.com/page/1/"
 
-You will see something like::
+你会看到类似于：
 
     [ ... Scrapy log here ... ]
     2016-09-19 12:09:27 [scrapy.core.engine] DEBUG: Crawled (200) <GET http://quotes.toscrape.com/page/1/> (referer: None)
@@ -229,54 +188,38 @@ You will see something like::
     [s]   view(response)    View response in a browser
     >>>
 
-Using the shell, you can try selecting elements using `CSS`_ with the response
-object::
+使用shell，你可以尝试用响应对象使用CSS选择元素：
 
     >>> response.css('title')
     [<Selector xpath='descendant-or-self::title' data='<title>Quotes to Scrape</title>'>]
 
-The result of running ``response.css('title')`` is a list-like object called
-:class:`~scrapy.selector.SelectorList`, which represents a list of
-:class:`~scrapy.selector.Selector` objects that wrap around XML/HTML elements
-and allow you to run further queries to fine-grain the selection or extract the
-data.
+运行的结果response.css('title')是一个名为的类似列表的对象 SelectorList，它表示一系列Selector围绕XML / HTML元素的对象列表， 并允许您运行更多查询来细化选择或提取数据。
 
-To extract the text from the title above, you can do::
+要从上述标题中提取文本，您可以执行以下操作：
 
     >>> response.css('title::text').extract()
     ['Quotes to Scrape']
 
-There are two things to note here: one is that we've added ``::text`` to the
-CSS query, to mean we want to select only the text elements directly inside
-``<title>`` element.  If we don't specify ``::text``, we'd get the full title
-element, including its tags::
+这里需要注意两点：其一是我们已经添加::text到CSS查询中，意思是我们只想选择元素内部的文本元素 <title>。如果我们没有指定::text，我们会得到完整的标题元素，包括它的标签：
 
     >>> response.css('title').extract()
     ['<title>Quotes to Scrape</title>']
 
-The other thing is that the result of calling ``.extract()`` is a list, because
-we're dealing with an instance of :class:`~scrapy.selector.SelectorList`.  When
-you know you just want the first result, as in this case, you can do::
+另一件事是调用的结果.extract()是一个列表，因为我们正在处理一个实例SelectorList。当你知道你只是想要第一个结果，就像在这种情况下，你可以这样做：
 
     >>> response.css('title::text').extract_first()
     'Quotes to Scrape'
 
-As an alternative, you could've written::
+或者，你可以写下：
 
     >>> response.css('title::text')[0].extract()
     'Quotes to Scrape'
 
-However, using ``.extract_first()`` avoids an ``IndexError`` and returns
-``None`` when it doesn't find any element matching the selection.
+但是，如果找不到与选择相匹配的元素，则使用.extract_first()避免IndexError并返回 None。
 
-There's a lesson here: for most scraping code, you want it to be resilient to
-errors due to things not being found on a page, so that even if some parts fail
-to be scraped, you can at least get **some** data.
+这里有一个教训：对于大多数刮擦代码，您希望它能够灵活地处理由于在页面上未找到的东西而导致的错误，因此即使某些部分无法被刮取，您至少也可以获取一些数据。
 
-Besides the :meth:`~scrapy.selector.Selector.extract` and
-:meth:`~scrapy.selector.SelectorList.extract_first` methods, you can also use
-the :meth:`~scrapy.selector.Selector.re` method to extract using `regular
-expressions`::
+除了extract()和 extract_first()方法之外，还可以使用该re()方法使用正则表达式进行提取：
 
     >>> response.css('title::text').re(r'Quotes.*')
     ['Quotes to Scrape']
@@ -285,13 +228,9 @@ expressions`::
     >>> response.css('title::text').re(r'(\w+) to (\w+)')
     ['Quotes', 'Scrape']
 
-In order to find the proper CSS selectors to use, you might find useful opening
-the response page from the shell in your web browser using ``view(response)``.
-You can use your browser developer tools or extensions like Firebug (see
-sections about :ref:`topics-firebug` and :ref:`topics-firefox`).
+为了找到合适的CSS选择器来使用，你可能会发现在你的web浏览器中用shell打开响应页面很有用view(response)。您可以使用浏览器开发工具或Firebug等扩展（请参阅关于使用Firebug进行抓取和使用Firefox进行抓取的部分）。
 
-`Selector Gadget`_ is also a nice tool to quickly find CSS selector for
-visually selected elements, which works in many browsers.
+Selector Gadget也是一个很好的工具，可以快速找到可供选择的元素的CSS选择器，这可以在许多浏览器中使用。
 
 .. _regular expressions: https://docs.python.org/3/library/re.html
 .. _Selector Gadget: http://selectorgadget.com/
